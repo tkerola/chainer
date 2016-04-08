@@ -16,6 +16,7 @@ from chainer.links.connection import inception
 from chainer.links.connection import inceptionbn
 from chainer.links.connection import linear
 from chainer.links.connection import lstm
+from chainer.links.connection import mgu
 from chainer.links.connection import mlp_convolution_2d
 from chainer.links.connection import n_step_lstm
 from chainer.links.connection import parameter
@@ -48,6 +49,8 @@ InceptionBN = inceptionbn.InceptionBN
 Linear = linear.Linear
 LSTM = lstm.LSTM
 StatelessLSTM = lstm.StatelessLSTM
+MGU = mgu.MGU
+StatefulMGU = mgu.StatefulMGU
 MLPConvolution2D = mlp_convolution_2d.MLPConvolution2D
 NStepLSTM = n_step_lstm.NStepLSTM
 Parameter = parameter.Parameter
