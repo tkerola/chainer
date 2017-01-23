@@ -517,7 +517,7 @@ light_mode = LightMode()
 
 
 def prod(*args, **kwargs):
-    if _fetch:
+    if _thread_local.light_mode:
         return numpy.prod(*args, **kwargs)
     else:
         return _prod(*args, **kwargs)
