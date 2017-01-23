@@ -502,6 +502,13 @@ def eval(exp):
         return exp.eval()
 
 
+def make_variable(value, name):
+    if _thread_local.light_mode:
+        return value
+    else:
+        return Variable(value, name)
+
+
 class LightMode(object):
 
     def __enter__(self):
