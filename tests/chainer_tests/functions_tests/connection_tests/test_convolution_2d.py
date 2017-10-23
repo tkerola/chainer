@@ -35,6 +35,7 @@ from chainer.testing import condition
     'x_dtype': [numpy.float16, numpy.float32, numpy.float64],
     'W_dtype': [numpy.float16, numpy.float32, numpy.float64],
     'dilate': [2],
+    'group': [1],
 })))
 class TestConvolution2DFunction(unittest.TestCase):
 
@@ -271,6 +272,7 @@ class TestConvolution2DFunction(unittest.TestCase):
     'cudnn_deterministic': [False],
     'dtype': [numpy.float16, numpy.float32, numpy.float64],
     'dilate': [2],
+    'group': [1],
 }))
 @attr.cudnn
 class TestConvolution2DCudnnCall(unittest.TestCase):

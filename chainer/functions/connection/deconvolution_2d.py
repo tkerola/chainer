@@ -170,7 +170,6 @@ class Deconvolution2DFunction(function_node.FunctionNode):
 
         self._set_cover_all(x, W)
 
-        print("cudnn_version: ", _cudnn_version)
         _gc_use_cudnn = True
         if self.group > 1 and _cudnn_version < 7000:
             _gc_use_cudnn = False
