@@ -108,8 +108,7 @@ class Convolution2D(link.Link):
             "supported anymore. "
             "Use chainer.using_config('cudnn_deterministic', value) "
             "context where value is either `True` or `False`.")
-        group, = argument.parse_kwargs(kwargs, ('group', 1))
-        dilate, = argument.parse_kwargs(kwargs, ('dilate', 1))
+        group, dilate = argument.parse_kwargs(kwargs, ('group', 1), ('dilate', 1))
 
         if ksize is None:
             out_channels, ksize, in_channels = in_channels, out_channels, None
