@@ -42,8 +42,7 @@ class Deconvolution2DFunction(function_node.FunctionNode):
             "the gradient w.r.t. x is automatically decided during "
             "backpropagation."
         )
-        group, = argument.parse_kwargs(kwargs, ('group', 1))
-        dilate, = argument.parse_kwargs(kwargs, ('dilate', 1))
+        group, dilate = argument.parse_kwargs(kwargs, ('group', 1), ('dilate', 1))
 
         self.sy, self.sx = _pair(stride)
         self.ph, self.pw = _pair(pad)
@@ -171,6 +170,7 @@ class Deconvolution2DFunction(function_node.FunctionNode):
 
         self._set_cover_all(x, W)
 
+        print("cudnn_version: ", _cudnn_version)
         _gc_use_cudnn = True
         if self.group > 1 and _cudnn_version < 7000:
             _gc_use_cudnn = False
@@ -427,8 +427,7 @@ http://www.matthewzeiler.com/pubs/cvpr2010/cvpr2010.pdf
         "supported anymore. "
         "Use chainer.using_config('cudnn_deterministic', value) "
         "context where value is either `True` or `False`.")
-    group, = argument.parse_kwargs(kwargs, ('group', 1))
-    dilate, = argument.parse_kwargs(kwargs, ('dilate', 1))
+    group, dilate = argument.parse_kwargs(kwargs, ('group', 1), ('dilate', 1))
 
     func = Deconvolution2DFunction(stride, pad, outsize, group=group, dilate=dilate)
     if b is None:

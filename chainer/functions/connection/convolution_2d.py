@@ -39,8 +39,7 @@ class Convolution2DFunction(function_node.FunctionNode):
             "the gradient w.r.t. x is automatically decided during "
             "backpropagation."
         )
-        group, = argument.parse_kwargs(kwargs, ('group', 1))
-        dilate, = argument.parse_kwargs(kwargs, ('dilate', 1))
+        group, dilate = argument.parse_kwargs(kwargs, ('group', 1), ('dilate', 1))
 
         self.sy, self.sx = _pair(stride)
         self.ph, self.pw = _pair(pad)
@@ -311,6 +310,7 @@ class Convolution2DGradW(function_node.FunctionNode):
         _gc_use_cudnn = True
         if self.group > 1 and _cudnn_version < 7000:
             _gc_use_cudnn = False
+        _dc_use_cudnn = True
         if not ((self.dy == 1 and self.dx == 1) or _cudnn_version >= 6000):
             _dc_use_cudnn = False
 
@@ -559,8 +559,7 @@ cover_all=True)
         "supported anymore. "
         "Use chainer.using_config('cudnn_deterministic', value) "
         "context where value is either `True` or `False`.")
-    group, = argument.parse_kwargs(kwargs, ('group', 1))
-    dilate, = argument.parse_kwargs(kwargs, ('dilate', 1))
+    group, dilate = argument.parse_kwargs(kwargs, ('group', 1), ('dilate', 1))
 
     fnode = Convolution2DFunction(stride, pad, cover_all, group=group, dilate=dilate)
     if b is None:
