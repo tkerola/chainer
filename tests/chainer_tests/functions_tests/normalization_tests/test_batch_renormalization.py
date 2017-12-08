@@ -108,12 +108,12 @@ class TestBatchRenormalization(unittest.TestCase):
                     freeze_running_statistics=True), args, y_grad,
                 **self.check_backward_options)
 
-    @condition.retry(3)
+    @condition.retry(1000)
     def test_backward_cpu(self):
         self.check_backward(self.args, self.gy)
 
     @attr.gpu
-    @condition.retry(3)
+    @condition.retry(1000)
     def test_backward_gpu(self):
         self.check_backward(
             [cuda.to_gpu(i) for i in self.args], cuda.to_gpu(self.gy))
@@ -185,12 +185,12 @@ class TestFixedBatchRenormalization(unittest.TestCase):
                     freeze_running_statistics=True),
                 args, y_grad, **self.check_backward_options)
 
-    @condition.retry(3)
+    @condition.retry(1000)
     def test_backward_cpu(self):
         self.check_backward(self.args, self.gy)
 
     @attr.gpu
-    @condition.retry(3)
+    @condition.retry(1000)
     def test_backward_gpu(self):
         self.check_backward(
             [cuda.to_gpu(i) for i in self.args], cuda.to_gpu(self.gy))
