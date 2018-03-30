@@ -209,7 +209,7 @@ class MultiprocessParallelUpdater(standard_updater.StandardUpdater):
 
         with cuda.Device(self._devices[0]):
             self._master.to_gpu(self._devices[0])
-            if self._random_seeds is not None:
+            if self._random_seeds[0] is not None:
                 print("Set master seed to {}".format(self._random_seeds[0]))
                 np.random.seed(self._random_seeds[0])
                 random.seed(self._random_seeds[0])
