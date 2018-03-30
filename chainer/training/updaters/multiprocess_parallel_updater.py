@@ -1,8 +1,11 @@
 import multiprocessing
+import random
 import warnings
 
+import numpy as np
 import six
 
+import chainer
 from chainer.backends import cuda
 from chainer.dataset import convert
 from chainer import reporter
@@ -20,7 +23,7 @@ import numpy
 
 class _Worker(multiprocessing.Process):
 
-    def __init__(self, proc_id, pipe, master):
+    def __init__(self, proc_id, pipe, master, random_seed):
         super(_Worker, self).__init__()
         self.proc_id = proc_id
         self.pipe = pipe
@@ -29,6 +32,7 @@ class _Worker(multiprocessing.Process):
         self.device = master._devices[proc_id]
         self.iterator = master._mpu_iterators[proc_id]
         self.n_devices = len(master._devices)
+        self._random_seed = random_seed
 
     def setup(self):
         _, comm_id = self.pipe.recv()
@@ -44,6 +48,12 @@ class _Worker(multiprocessing.Process):
     def run(self):
         dev = cuda.Device(self.device)
         dev.use()
+        if self._random_seed is not None:
+            print("Set worker {} seed to {}".format(self.proc_id, self._random_seed))
+            np.random.seed(self._random_seed)
+            random.seed(self._random_seed)
+            cuda.cupy.random.seed(self._random_seed)
+            chainer.config.cudnn_deterministic = True
         self.setup()
         gp = None
         while True:
@@ -113,11 +123,14 @@ class MultiprocessParallelUpdater(standard_updater.StandardUpdater):
         devices: Dictionary or list of devices to which the training data is
             sent. The master device will be the first one in the list or the
             value attached to the key ``'main'``.
+        random_seed: Random seed for CuPy on each GPU. Should either be a list
+            containing the integer random seed for each GPU, or an integer, in
+            which case the same seed is used for all GPUs.
 
     """
 
     def __init__(self, iterators, optimizer, converter=convert.concat_examples,
-                 devices=None):
+                 devices=None, random_seed=None):
         if not MultiprocessParallelUpdater.available():
             raise Exception(
                 'NCCL is not enabled. MultiprocessParallelUpdater '
@@ -169,6 +182,10 @@ class MultiprocessParallelUpdater(standard_updater.StandardUpdater):
         self._workers = []
         self.comm = None
 
+        if not isinstance(random_seed, (list, tuple)):
+            random_seed = [random_seed] * len(devices)
+        self._random_seeds = random_seed
+
     @staticmethod
     def available():
         return _available
@@ -185,13 +202,19 @@ class MultiprocessParallelUpdater(standard_updater.StandardUpdater):
         self._master.cleargrads()
         for i in six.moves.range(1, len(self._devices)):
             pipe, worker_end = multiprocessing.Pipe()
-            worker = _Worker(i, worker_end, self)
+            worker = _Worker(i, worker_end, self, self._random_seeds[i])
             worker.start()
             self._workers.append(worker)
             self._pipes.append(pipe)
 
         with cuda.Device(self._devices[0]):
             self._master.to_gpu(self._devices[0])
+            if self._random_seeds is not None:
+                print("Set master seed to {}".format(self._random_seeds[0]))
+                np.random.seed(self._random_seeds[0])
+                random.seed(self._random_seeds[0])
+                cuda.cupy.random.seed(self._random_seeds[0])
+                chainer.config.cudnn_deterministic = True
             if len(self._devices) > 1:
                 comm_id = nccl.get_unique_id()
                 self._send_message(("set comm_id", comm_id))
